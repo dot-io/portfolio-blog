@@ -1,20 +1,19 @@
 ---
 import Navigation from "./Navigation.astro";
 import Menu from "./Menu.astro";
-import ThemeIcon from "./ThemeIcon.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+import Star from "./Star.astro";
 ---
-<header>
-<nav>
-    <div>
-        <ThemeIcon/>
-        <Menu />
+<header class="site-header">
+  <div class="header-bar">
+    <a class="brand" href="/">
+      <Star class="brand-mark" size={13} />
+      <span>Nate's Lab</span>
+    </a>
+    <div class="header-tools">
+      <ThemeToggle />
+      <Menu />
     </div>
     <Navigation />
-</nav>
+  </div>
 </header>
-<style>
-    div {
-        display: flex;
-        justify-content: space-between;
-    }
-</style>

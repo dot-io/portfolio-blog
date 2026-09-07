@@ -1,6 +1,5 @@
 ---
 import type { MarkdownInstance } from "astro";
-import "../styles/global.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BlogPost from "../components/BlogPost.astro";
 
@@ -17,17 +16,113 @@ const allPosts = Object.values(
 	import.meta.glob<MarkdownInstance<Frontmatter>>("./posts/*.md", {
 		eager: true,
 	}),
+).sort(
+	(a, b) =>
+		new Date(b.frontmatter.pubDate).valueOf() -
+		new Date(a.frontmatter.pubDate).valueOf(),
 );
+
+const allTags = [
+	...new Set(allPosts.flatMap((post) => post.frontmatter.tags ?? [])),
+].sort();
+
 const pageTitle = "My Blog";
 ---
 
-<BaseLayout pageTitle={pageTitle}>
-	<p>This is where I will post about my journey learning Astro.</p>
-	<ul>
+<BaseLayout
+	pageTitle={pageTitle}
+	eyebrow="Field Notes"
+	subtitle="Notes written down while learning in public, so I can find them again later."
+>
+	<div class="filter-bar">
+		<p class="eyebrow">Filter by tag</p>
+		<div class="tags" role="group" aria-label="Filter posts by tag">
+			<button type="button" class="tag tag-filter" data-tag="" aria-pressed="true">
+				All
+			</button>
+			{
+				allTags.map((tag) => (
+					<button type="button" class="tag tag-filter" data-tag={tag} aria-pressed="false">
+						{tag}
+					</button>
+				))
+			}
+		</div>
+		<p class="filter-status" role="status" aria-live="polite"></p>
+	</div>
+
+	<ul class="post-list" id="post-list">
 		{
-			allPosts.map((post: any) => (
-			<BlogPost url={post.url} title={post.frontmatter.title}/>		
-		))
+			allPosts.map((post) => (
+				<BlogPost
+					url={post.url}
+					title={post.frontmatter.title}
+					tags={post.frontmatter.tags ?? []}
+					pubDate={post.frontmatter.pubDate}
+				/>
+			))
 		}
 	</ul>
+
+	<p class="filter-empty" hidden>Nothing filed under that tag yet.</p>
 </BaseLayout>
+
+<script>
+	const list = document.querySelector<HTMLElement>("#post-list");
+	const empty = document.querySelector<HTMLElement>(".filter-empty");
+	const status = document.querySelector<HTMLElement>(".filter-status");
+
+	if (list && empty && status) {
+		const items = [...list.querySelectorAll<HTMLElement>(".post-item")];
+		const buttons = [...document.querySelectorAll<HTMLButtonElement>(".tag-filter")];
+		const known = new Set(buttons.map((button) => button.dataset.tag).filter(Boolean));
+
+		// deep links from a post's tag list arrive as ?tag=astro&tag=…
+		const selected = new Set(
+			new URLSearchParams(location.search)
+				.getAll("tag")
+				.filter((tag) => known.has(tag)),
+		);
+
+		const render = () => {
+			let shown = 0;
+
+			for (const item of items) {
+				const tags = (item.dataset.tags || "").split("|").filter(Boolean);
+				const match = selected.size === 0 || tags.some((tag) => selected.has(tag));
+				item.classList.toggle("is-hidden", !match);
+				if (match) shown += 1;
+			}
+
+			for (const button of buttons) {
+				const tag = button.dataset.tag;
+				const active = tag ? selected.has(tag) : selected.size === 0;
+				button.setAttribute("aria-pressed", String(active));
+			}
+
+			const noun = shown === 1 ? "post" : "posts";
+			status.textContent =
+				selected.size === 0
+					? `${shown} ${noun}`
+					: `${shown} ${noun} tagged ${[...selected].join(", ")}`;
+			empty.hidden = shown > 0;
+
+			const params = new URLSearchParams();
+			for (const tag of selected) params.append("tag", tag);
+			const query = params.toString();
+			history.replaceState(null, "", query ? `?${query}` : location.pathname);
+		};
+
+		for (const button of buttons) {
+			button.addEventListener("click", () => {
+				const tag = button.dataset.tag;
+				if (!tag) selected.clear();
+				else if (selected.has(tag)) selected.delete(tag);
+				else selected.add(tag);
+				render();
+			});
+		}
+
+		render();
+	}
+</script>

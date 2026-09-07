@@ -1,9 +1,28 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Greeting from "../components/Greeting";
-const pageTitle = "Home Page";
+const pageTitle = "Nate's Lab";
 ---
-<BaseLayout pageTitle={pageTitle}>
-	<h2>My awesome blog subtitle</h2>
-	<Greeting client:load messages={["Hej", "Hallo", "Hola", "Habari"]} />
+
+<BaseLayout
+  pageTitle={pageTitle}
+  eyebrow="Welcome to"
+  subtitle="Compilers, systems, and the low-level machinery underneath. This is where I keep the work and the notes that came out of it."
+>
+  <div class="cta">
+    <a class="btn" href="/projects/">See the projects</a>
+    <a class="btn" href="/blog/">Read the blog</a>
+  </div>
+
+  <h2>Visitors are received</h2>
+  <Greeting client:load messages={["Hej", "Hallo", "Hola", "Habari"]} />
 </BaseLayout>
+
+<style>
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin: 2rem 0 3rem;
+  }
+</style>

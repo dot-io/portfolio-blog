@@ -1,14 +1,11 @@
 ---
 import Social from "./Social.astro";
+const year = new Date().getFullYear();
 ---
-<style>
-  footer {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-  }
-</style>
-<footer>
-  <Social platform="github" username="dot-io"/>
-  <Social platform="linkedin" username="nathan"/>
+<footer class="site-footer">
+  <span>&copy; {year} Nathan &middot; Built with Astro</span>
+  <div class="social-links">
+    <Social platform="github" username="dot-io" />
+    <Social platform="linkedin" username="nathan" />
+  </div>
 </footer>

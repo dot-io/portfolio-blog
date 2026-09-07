@@ -1,0 +1,96 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Star from "../components/Star.astro";
+
+const pageTitle = "Projects";
+
+// Placeholder entries — replace with your own work.
+const projects = [
+  {
+    year: "2026",
+    title: "This Site",
+    status: "Ongoing",
+    blurb:
+      "A static portfolio and blog built while working through the Astro tutorial, then rebuilt around a white-and-gold design system.",
+    tech: ["Astro", "TypeScript", "CSS"],
+    href: "/blog/",
+  },
+  {
+    year: "2025",
+    title: "LLVM Optimisation Pass",
+    status: "Coursework",
+    blurb:
+      "An analysis and transformation pass over LLVM IR, exploring how far a compiler can rewrite a program before its meaning drifts.",
+    tech: ["C++", "LLVM IR"],
+    href: "https://github.com/dot-io",
+  },
+  {
+    year: "2025",
+    title: "Data Pipeline Toolkit",
+    status: "Personal",
+    blurb:
+      "Python tooling to pull, clean and query a messy dataset, with a SQL schema designed for questions rather than storage.",
+    tech: ["Python", "SQL"],
+    href: "https://github.com/dot-io",
+  },
+  {
+    year: "2024",
+    title: "Embedded Systems Lab",
+    status: "University",
+    blurb:
+      "Low-level C on constrained hardware: timers, interrupts and the slow discipline of reading a datasheet properly.",
+    tech: ["C", "Embedded"],
+    href: "https://github.com/dot-io",
+  },
+  {
+    year: "2023",
+    title: "Thesis Typesetting System",
+    status: "Archived",
+    blurb:
+      "A LaTeX class and build pipeline that made a long document behave like a codebase — versioned, reproducible, boring.",
+    tech: ["LaTeX", "Git"],
+    href: "https://github.com/dot-io",
+  },
+];
+---
+
+<BaseLayout
+  pageTitle={pageTitle}
+  eyebrow="The Chronicle"
+  subtitle="A record of things built, most recent first. Each star opens the work behind it."
+>
+  <ol class="timeline">
+    {
+      projects.map((project) => (
+        <li class="tl-item">
+          <span class="tl-node" aria-hidden="true">
+            <Star size={16} />
+          </span>
+          <span class="tl-year">{project.year}</span>
+          <a
+            class="tl-card"
+            href={project.href}
+            target={project.href.startsWith("http") ? "_blank" : undefined}
+            rel={project.href.startsWith("http") ? "noopener noreferrer" : undefined}
+          >
+            <h2 class="tl-title">{project.title}</h2>
+            <span class="tl-status">{project.status}</span>
+            <p class="tl-blurb">{project.blurb}</p>
+            <ul class="tags">
+              {project.tech.map((item) => (
+                <li class="tag">{item}</li>
+              ))}
+            </ul>
+            <span class="tl-more">Open &#8594;</span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</BaseLayout>
+
+<style>
+  .tl-title {
+    margin-top: 0;
+  }
+</style>

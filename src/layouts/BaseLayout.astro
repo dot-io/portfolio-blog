@@ -1,8 +1,9 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Star from '../components/Star.astro';
 import '../styles/global.css';
-const { pageTitle } = Astro.props;
+const { pageTitle, eyebrow, subtitle } = Astro.props;
 ---
 <html lang="en">
   <head>
@@ -10,15 +11,34 @@ const { pageTitle } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Jost:wght@300;400;500&display=swap"
+    />
     <title>{pageTitle}</title>
   </head>
   <body>
     <Header />
-    <h1>{pageTitle}</h1>
-    <slot />
+    <main class="shell">
+      <div class="page-head">
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+        <h1>{pageTitle}</h1>
+        <div class="rule"><Star size={13} /></div>
+        {subtitle && <p class="lede">{subtitle}</p>}
+      </div>
+      <slot />
+    </main>
     <Footer />
     <script>
       import "../scripts/menu.js";
     </script>
   </body>
 </html>
+
+<style>
+  .page-head {
+    margin-bottom: 2rem;
+  }
+</style>

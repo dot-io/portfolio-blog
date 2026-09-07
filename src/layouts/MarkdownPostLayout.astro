@@ -1,34 +1,45 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 const { frontmatter } = Astro.props;
+const pubDate = new Date(frontmatter.pubDate).toLocaleDateString("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 ---
-<BaseLayout pageTitle={frontmatter.pageTitle}>
-<p><em>{frontmatter.description}</em></p>
-<p>Written by: {frontmatter.author}</p>
-<img src={frontmatter.image.url} width="300" alt={frontmatter.image.alt} />
-<div class="tags">
+<BaseLayout
+  pageTitle={frontmatter.title}
+  eyebrow={pubDate}
+  subtitle={frontmatter.description}
+>
+  <p class="byline">Written by {frontmatter.author}</p>
+  <img class="hero" src={frontmatter.image.url} alt={frontmatter.image.alt} />
+  <ul class="tags">
     {frontmatter.tags.map((tag: string) => (
-    <p class="tag"><a href={`/tags/${tag}`}>{tag}</a></p>
+      <li class="tag"><a href={`/blog/?tag=${encodeURIComponent(tag)}`}>{tag}</a></li>
     ))}
-</div>
-<slot />
+  </ul>
+  <article>
+    <slot />
+  </article>
 </BaseLayout>
+
 <style>
-  a {
-    color: #00539F;
+  .byline {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
 
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
+  .hero {
+    width: 100%;
+    margin: 1.5rem 0;
+    border: 1px solid var(--line);
+    filter: saturate(0.85);
   }
 
-  .tag {
-    margin: 0.25em;
-    border: dotted 1px #a1a1a1;
-    border-radius: .5em;
-    padding: .5em 1em;
-    font-size: 1.15em;
-    background-color: #F8FCFD;
+  article :global(h1) {
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
   }
 </style>
