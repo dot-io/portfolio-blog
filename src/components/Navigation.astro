@@ -1,24 +1,91 @@
 ---
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/projects/", label: "Projects" },
-  { href: "/about/", label: "About" },
-  { href: "/blog/", label: "Blog" },
+type NavChild = { href: string; label: string };
+type NavLink = { href: string; label: string; children?: NavChild[] };
+
+// Children whose href starts with http are treated as external automatically,
+// so adding a newly deployed project needs nothing but an href and a label.
+const links: NavLink[] = [
+  { href: "/", label: "Blog" },
+  {
+    href: "/projects/",
+    label: "Projects",
+    children: [
+      { href: "/projects/", label: "Timeline" },
+      { href: "https://commute.nateslab.cc", label: "Commute" },
+    ],
+  },
+  {
+    href: "/about/",
+    label: "About",
+    children: [
+      { href: "/about/", label: "About Me" },
+      { href: "/skills/", label: "Hard Skills" },
+    ],
+  },
 ];
+
 const path = Astro.url.pathname;
+const isExternal = (href: string) => href.startsWith("http");
 ---
 <nav class="nav-links" id="main-menu">
   {
-    links.map(({ href, label }) => (
-      <a href={href} aria-current={path === href ? "page" : undefined}>
-        {label}
-      </a>
-    ))
+    links.map((link) =>
+      link.children ? (
+        <div class="nav-group">
+          <a
+            class="nav-trigger"
+            href={link.href}
+            aria-current={path === link.href ? "page" : undefined}
+            data-section={
+              link.children.some((child) => path === child.href) ? "" : undefined
+            }
+          >
+            {link.label}
+            <svg class="nav-chevron" aria-hidden="true" viewBox="0 0 10 6" width="8" height="5">
+              <path
+                d="M1 1l4 4 4-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              />
+            </svg>
+          </a>
+          <ul class="nav-menu">
+            {link.children.map((child) => (
+              <li>
+                <a
+                  href={child.href}
+                  aria-current={path === child.href ? "page" : undefined}
+                  target={isExternal(child.href) ? "_blank" : undefined}
+                  rel={isExternal(child.href) ? "noopener noreferrer" : undefined}
+                >
+                  {child.label}
+                  {isExternal(child.href) && (
+                    <span class="nav-external" aria-hidden="true">&#8599;</span>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <a href={link.href} aria-current={path === link.href ? "page" : undefined}>
+          {link.label}
+        </a>
+      ),
+    )
   }
 </nav>
 
 <style>
-  a[aria-current="page"] {
+  a[aria-current="page"],
+  a[data-section] {
     color: var(--text);
+  }
+
+  .nav-external {
+    margin-left: 0.4rem;
+    color: var(--gold);
   }
 </style>

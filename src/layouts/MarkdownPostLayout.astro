@@ -16,7 +16,7 @@ const pubDate = new Date(frontmatter.pubDate).toLocaleDateString("en-GB", {
   <img class="hero" src={frontmatter.image.url} alt={frontmatter.image.alt} />
   <ul class="tags">
     {frontmatter.tags.map((tag: string) => (
-      <li class="tag"><a href={`/blog/?tag=${encodeURIComponent(tag)}`}>{tag}</a></li>
+      <li class="tag"><a href={`/?tag=${encodeURIComponent(tag)}`}>{tag}</a></li>
     ))}
   </ul>
   <article>

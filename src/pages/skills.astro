@@ -1,0 +1,424 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const pageTitle = "Hard Skills";
+
+const LEVELS = 5;
+
+// The rubric is the point of this page: a level means something specific, so a
+// score can be argued with instead of just felt. Score each domain by the
+// highest rung you can actually defend, then write the defence in `evidence`.
+const rubric = [
+  { level: 0, name: "Unexplored", meaning: "Never touched it. Named here for honesty." },
+  { level: 1, name: "Read", meaning: "Read around it. Could follow a conversation, not join one." },
+  { level: 2, name: "Taught", meaning: "Coursework and exercises. Works when the problem is set for me." },
+  { level: 3, name: "Built", meaning: "Built something of my own with it that worked." },
+  { level: 4, name: "Sustained", meaning: "Carried something real through debugging, rewriting and reading the spec in anger." },
+  { level: 5, name: "Teaching", meaning: "Others ask me. I know where the sharp edges are and why they are there." },
+];
+
+// Ordered from the metal outwards, so neighbouring corners are related and the
+// shape of the polygon reads as something rather than noise.
+// LEVELS ARE PLACEHOLDERS — they are read off what this site already claims.
+// Re-score them against the rubric above; the evidence line is what keeps you
+// honest when you do.
+const axes = [
+  {
+    label: "Compilers & Systems",
+    short: "Compilers",
+    level: 4,
+    evidence:
+      "LLVM IR analysis and transformation passes, and enough C++ to follow a program down to the assembly it becomes.",
+  },
+  {
+    label: "Parallelism & Concurrency",
+    short: "Parallelism",
+    level: 3,
+    evidence:
+      "Threads, locks and work splitting from coursework. Still learning where a memory model bites back.",
+  },
+  {
+    label: "Hardware & Architecture",
+    short: "Hardware",
+    level: 3,
+    evidence:
+      "Embedded C on constrained boards: timers, interrupts, and the slow discipline of reading a datasheet properly.",
+  },
+  {
+    label: "Networking & Distributed",
+    short: "Networking",
+    level: 2,
+    evidence:
+      "Protocol fundamentals from coursework. Little built on top of them yet.",
+  },
+  {
+    label: "Security",
+    short: "Security",
+    level: 2,
+    evidence:
+      "Threat-model literate and comfortable with crypto primitives. Nothing offensive or defensive shipped.",
+  },
+  {
+    label: "Data & Storage",
+    short: "Data",
+    level: 3,
+    evidence:
+      "SQL schemas designed around the questions asked of them, and Python pipelines over genuinely messy data.",
+  },
+  {
+    label: "Machine Learning",
+    short: "ML",
+    level: 3,
+    evidence:
+      "Training and evaluation from coursework. The maths is comfortable; deployment is not.",
+  },
+  {
+    label: "Agentic Systems",
+    short: "Agentic",
+    level: 2,
+    evidence:
+      "Daily driver of LLM tooling, this site included. Have not yet built an agent that runs without me.",
+  },
+  {
+    label: "Algorithms & Data Structures",
+    short: "Algorithms",
+    level: 4,
+    evidence:
+      "Coursework plus steady practice. The standard interview battery holds no surprises.",
+  },
+];
+
+// ---- radar geometry, all resolved at build time ----
+const VIEW = { w: 520, h: 440 };
+const C = { x: 260, y: 215 };
+const R = 140;
+const LABEL_R = R + 26;
+
+const angleOf = (i: number) => ((-90 + (360 / axes.length) * i) * Math.PI) / 180;
+
+const pointAt = (i: number, value: number) => {
+  const a = angleOf(i);
+  const r = (R * value) / LEVELS;
+  return { x: C.x + r * Math.cos(a), y: C.y + r * Math.sin(a) };
+};
+
+const polygonFor = (value: number) =>
+  axes
+    .map((_, i) => {
+      const p = pointAt(i, value);
+      return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    })
+    .join(" ");
+
+const rings = Array.from({ length: LEVELS }, (_, i) => polygonFor(i + 1));
+const spokes = axes.map((_, i) => pointAt(i, LEVELS));
+const plot = axes.map((axis, i) => ({ ...axis, ...pointAt(i, axis.level) }));
+
+const labels = axes.map((axis, i) => {
+  const a = angleOf(i);
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  return {
+    ...axis,
+    x: +(C.x + LABEL_R * cos).toFixed(1),
+    // nudge the top and bottom labels clear of the outer ring
+    y: +(C.y + LABEL_R * sin + (sin < -0.45 ? -7 : sin > 0.45 ? 9 : 0)).toFixed(1),
+    anchor: cos > 0.25 ? "start" : cos < -0.25 ? "end" : "middle",
+  };
+});
+
+const training = ["Astro", "Frontend", "Agentic tooling", "Rust"];
+---
+
+<BaseLayout
+  pageTitle={pageTitle}
+  eyebrow="Attributes"
+  subtitle="Nine domains of software engineering, each scored against a written rubric rather than a feeling. Self-audited October 2026 — the shape is the honest part, not any single corner."
+>
+  <figure class="radar">
+    <svg
+      viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
+      role="img"
+      aria-label={`Radar chart of nine engineering domains, each scored from 0 to ${LEVELS}. Levels are listed in full beneath the chart.`}
+    >
+      {rings.map((points, i) => (
+        <polygon class={i === LEVELS - 1 ? "ring ring-outer" : "ring"} points={points} />
+      ))}
+
+      {
+        spokes.map((p) => (
+          <line class="spoke" x1={C.x} y1={C.y} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)} />
+        ))
+      }
+
+      <g class="plot-group">
+        <polygon class="plot" points={plot.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")} />
+        {plot.map((p) => <circle class="vertex" cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="3.6" />)}
+      </g>
+
+      {
+        labels.map((label) => (
+          <text class="axis-label" x={label.x} y={label.y} text-anchor={label.anchor}>
+            {label.short}
+            <tspan class="axis-level" x={label.x} dy="1.3em">
+              {label.level}
+            </tspan>
+          </text>
+        ))
+      }
+    </svg>
+    <figcaption>
+      Each corner is scored 0&ndash;5. The faint rings are the rungs of the rubric below.
+    </figcaption>
+  </figure>
+
+  <h2>How a level is earned</h2>
+  <ol class="rubric">
+    {
+      rubric.map((rung) => (
+        <li>
+          <span class="rubric-level">{rung.level}</span>
+          <span class="rubric-name">{rung.name}</span>
+          <span class="rubric-meaning">{rung.meaning}</span>
+        </li>
+      ))
+    }
+  </ol>
+
+  <h2>The domains</h2>
+  <ul class="stats">
+    {
+      axes.map((axis) => (
+        <li class="stat">
+          <div class="stat-head">
+            <span class="stat-name">{axis.label}</span>
+            <span class="stat-score">
+              <span class="pips" aria-hidden="true">
+                {Array.from({ length: LEVELS }, (_, i) => (
+                  <span class={i < axis.level ? "pip is-filled" : "pip"} />
+                ))}
+              </span>
+              <span class="stat-level">
+                {axis.level}<span class="stat-max">/{LEVELS}</span>
+              </span>
+            </span>
+          </div>
+          <p class="stat-evidence">{axis.evidence}</p>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Currently training</h2>
+  <ul class="tags">
+    {training.map((item) => <li class="tag">{item}</li>)}
+  </ul>
+</BaseLayout>
+
+<style>
+  /* ---------- radar ---------- */
+
+  .radar {
+    margin: 0 0 3rem;
+  }
+
+  .radar svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ring {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 1;
+  }
+
+  .ring-outer {
+    stroke: var(--line-strong);
+  }
+
+  .spoke {
+    stroke: var(--line);
+    stroke-width: 1;
+  }
+
+  .plot {
+    fill: var(--gold);
+    fill-opacity: 0.16;
+    stroke: var(--gold);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+
+  .vertex {
+    fill: var(--gold);
+  }
+
+  .plot-group {
+    transform-box: view-box;
+    transform-origin: 260px 215px;
+    animation: bloom 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  @keyframes bloom {
+    from {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .axis-label {
+    font-family: var(--font-display);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    fill: var(--muted);
+  }
+
+  .axis-level {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    fill: var(--gold);
+  }
+
+  .radar figcaption {
+    margin-top: 0.8rem;
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* ---------- rubric ---------- */
+
+  .rubric {
+    margin: 1.5rem 0 3rem;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .rubric li {
+    display: grid;
+    grid-template-columns: 1.6rem 7rem 1fr;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rubric-level {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--gold);
+  }
+
+  .rubric-name {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .rubric-meaning {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  @media screen and (max-width: 560px) {
+    .rubric li {
+      grid-template-columns: 1.6rem 1fr;
+    }
+
+    .rubric-meaning {
+      grid-column: 2;
+    }
+  }
+
+  /* ---------- domain list ---------- */
+
+  .stats {
+    margin: 1.5rem 0 3rem;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .stat {
+    padding: 1.1rem 1.3rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color 0.25s ease;
+  }
+
+  .stat:hover {
+    border-color: var(--accent);
+  }
+
+  .stat-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1.2rem;
+  }
+
+  .stat-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .stat-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .pips {
+    display: inline-flex;
+    gap: 0.3rem;
+  }
+
+  .pip {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+  }
+
+  .pip.is-filled {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .stat-level {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--gold);
+  }
+
+  .stat-max {
+    color: var(--muted);
+  }
+
+  .stat-evidence {
+    margin: 0.6rem 0 0;
+    max-width: 60ch;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plot-group {
+      animation: none;
+    }
+  }
+</style>

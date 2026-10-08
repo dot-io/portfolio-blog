@@ -307,6 +307,35 @@ img {
   display: block;
 }
 
+/* ---------- nav dropdown ---------- */
+
+/* On narrow screens the submenu is simply nested under its parent: there is no
+   hover to open it with, so it stays open inside the burger menu. */
+.nav-links .nav-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.nav-chevron {
+  display: none;
+  color: var(--gold);
+  transition: transform 0.25s ease;
+}
+
+.nav-menu {
+  margin: 0 0 0.4rem;
+  padding: 0 0 0 1rem;
+  list-style: none;
+  border-left: 1px solid var(--line);
+}
+
+.nav-links .nav-menu a {
+  padding: 0.45rem 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+}
+
 .menu {
   padding: 0.35rem 0.8rem;
   font-family: var(--font-display);
@@ -327,18 +356,23 @@ img {
 @media screen and (min-width: 680px) {
   .nav-links {
     display: flex;
+    align-items: center;
     gap: 1.75rem;
     order: 2;
     flex-basis: auto;
     padding: 0;
   }
 
-  .nav-links a {
+  /* the growing underline belongs to top-level items only, not to the
+     links inside the dropdown panel */
+  .nav-links > a,
+  .nav-links .nav-trigger {
     position: relative;
     padding: 0;
   }
 
-  .nav-links a::after {
+  .nav-links > a::after,
+  .nav-links .nav-trigger::after {
     content: "";
     position: absolute;
     left: 0;
@@ -349,8 +383,10 @@ img {
     transition: right 0.3s ease;
   }
 
-  .nav-links a:hover::after,
-  .nav-links a:focus-visible::after {
+  .nav-links > a:hover::after,
+  .nav-links > a:focus-visible::after,
+  .nav-links .nav-trigger:hover::after,
+  .nav-links .nav-trigger:focus-visible::after {
     right: 0;
   }
 
@@ -360,6 +396,72 @@ img {
 
   .menu {
     display: none;
+  }
+
+  /* The trigger must be a flex item, not inline content: as an inline-flex box
+     with no baseline-aligned child, its baseline is synthesised from its bottom
+     edge, which dropped the name below its plain-link siblings. */
+  .nav-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-chevron {
+    display: block;
+  }
+
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    min-width: 12.5rem;
+    margin: 0;
+    padding: 0.35rem 0;
+    background: var(--surface-solid);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 44px -26px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 0.35rem);
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+  }
+
+  /* bridges the gap under the name, so the pointer can travel into the
+     panel without passing through dead space and closing it */
+  .nav-menu::before {
+    content: "";
+    position: absolute;
+    inset: -0.9rem 0 100% 0;
+  }
+
+  /* :focus-within is what makes this work for the keyboard — the panel opens
+     while the name itself is focused, before Tab reaches the links inside */
+  .nav-group:hover .nav-menu,
+  .nav-group:focus-within .nav-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0.9rem);
+  }
+
+  .nav-group:hover .nav-chevron,
+  .nav-group:focus-within .nav-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-links .nav-menu a {
+    display: block;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+  }
+
+  .nav-links .nav-menu a:hover,
+  .nav-links .nav-menu a:focus-visible {
+    color: var(--accent);
+    background: var(--surface);
   }
 }
 
