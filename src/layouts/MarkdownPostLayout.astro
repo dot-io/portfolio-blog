@@ -1,24 +1,33 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import { formatDay } from "../utils/dates";
 const { frontmatter } = Astro.props;
-const pubDate = new Date(frontmatter.pubDate).toLocaleDateString("en-GB", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
+const pubDate = formatDay(frontmatter.pubDate);
+const tags: string[] = frontmatter.tags ?? [];
 ---
 <BaseLayout
   pageTitle={frontmatter.title}
   eyebrow={pubDate}
   subtitle={frontmatter.description}
 >
-  <p class="byline">Written by {frontmatter.author}</p>
-  <img class="hero" src={frontmatter.image.url} alt={frontmatter.image.alt} />
-  <ul class="tags">
-    {frontmatter.tags.map((tag: string) => (
-      <li class="tag"><a href={`/?tag=${encodeURIComponent(tag)}`}>{tag}</a></li>
-    ))}
-  </ul>
+  <p class="byline">written by {frontmatter.author}</p>
+  {
+    // the cover image is optional: a post without one simply goes straight to its text
+    frontmatter.image && (
+      <figure class="hero hatch-shadow">
+        <img src={frontmatter.image.url} alt={frontmatter.image.alt ?? ""} />
+      </figure>
+    )
+  }
+  {
+    tags.length > 0 && (
+      <ul class="tags">
+        {tags.map((tag) => (
+          <li class="tag"><a href={`/?tag=${encodeURIComponent(tag)}`}>{tag}</a></li>
+        ))}
+      </ul>
+    )
+  }
   <article>
     <slot />
   </article>
@@ -26,20 +35,53 @@ const pubDate = new Date(frontmatter.pubDate).toLocaleDateString("en-GB", {
 
 <style>
   .byline {
-    font-size: 0.78rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    font-size: 0.85rem;
     color: var(--muted);
   }
 
   .hero {
-    width: 100%;
-    margin: 1.5rem 0;
+    margin: 1.5rem 6px 2rem 0;
+    padding: 0;
     border: 1px solid var(--line);
-    filter: saturate(0.85);
+  }
+
+  .hero img {
+    display: block;
+    width: 100%;
   }
 
   article :global(h1) {
-    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-size: clamp(1.3rem, 3.5vw, 1.6rem);
+  }
+
+  /* Images written as ![alt](./file.png) in Markdown land here, wrapped in a
+     paragraph. A <figure> with a <figcaption> gets the same frame plus a caption. */
+  article :global(img) {
+    display: block;
+    margin: 1.6rem 0 0.4rem;
+    padding: 4px;
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+  }
+
+  article :global(figure) {
+    margin: 1.6rem 0;
+  }
+
+  /* a Markdown image inside <figure> arrives wrapped in a <p> */
+  article :global(figure img),
+  article :global(figure p) {
+    margin: 0;
+  }
+
+  article :global(figcaption) {
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  article :global(figcaption)::before {
+    content: "^ ";
+    color: var(--heading-mark);
   }
 </style>

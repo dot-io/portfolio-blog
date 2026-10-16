@@ -3,9 +3,15 @@ import Social from "./Social.astro";
 const year = new Date().getFullYear();
 ---
 <footer class="site-footer">
-  <span>&copy; {year} Nathan Mestdagh</span>
-  <div class="social-links">
-    <Social platform="github" url="github.com/dot-io" />
-    <Social platform="linkedin" username="linkedin.com/in/nathan-m-b61269253/" />
+  <div class="footer-row">
+    <span>&copy; {year} Nathan Mestdagh</span>
+    <div class="social-links">
+      <Social platform="github" url="https://github.com/dot-io" />
+      <Social platform="linkedin" url="https://www.linkedin.com/in/nathan-m-b61269253/" />
+    </div>
   </div>
+  <p class="colophon">
+    Made with <a href="https://astro.build/">Astro</a>.
+    Colours: <a href="https://ethanschoonover.com/solarized/">Solarized</a> by Ethan Schoonover.
+  </p>
 </footer>

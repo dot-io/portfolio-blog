@@ -35,7 +35,7 @@ const pageTitle = "My Blog";
 	subtitle="Notes written down while learning in public, so I can find them again later."
 >
 	<div class="filter-bar">
-		<p class="eyebrow">Filter by tag</p>
+		<p class="eyebrow">filter by tag</p>
 		<div class="tags" role="group" aria-label="Filter posts by tag">
 			<button type="button" class="tag tag-filter" data-tag="" aria-pressed="true">
 				All
@@ -57,6 +57,7 @@ const pageTitle = "My Blog";
 				<BlogPost
 					url={post.url}
 					title={post.frontmatter.title}
+					description={post.frontmatter.description}
 					tags={post.frontmatter.tags ?? []}
 					pubDate={post.frontmatter.pubDate}
 				/>

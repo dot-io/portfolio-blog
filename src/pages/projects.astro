@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Star from "../components/Star.astro";
 
 const pageTitle = "Projects";
 
@@ -11,7 +10,7 @@ const projects = [
     title: "This Site",
     status: "Ongoing",
     blurb:
-      "A static portfolio and blog built while working through the Astro tutorial, then rebuilt around a white-and-gold design system.",
+      "A static portfolio and blog built while working through the Astro tutorial, then rebuilt around Solarized and a monospace grid.",
     tech: ["Astro", "TypeScript", "CSS"],
     href: "/",
   },
@@ -56,19 +55,17 @@ const projects = [
 
 <BaseLayout
   pageTitle={pageTitle}
-  eyebrow="The Chronicle"
-  subtitle="A record of things built, most recent first. Each star opens the work behind it."
+  eyebrow="git log"
+  subtitle="A record of things built, most recent first. Each entry opens the work behind it."
 >
   <ol class="timeline">
     {
       projects.map((project) => (
         <li class="tl-item">
-          <span class="tl-node" aria-hidden="true">
-            <Star size={16} />
-          </span>
+          <span class="tl-node" aria-hidden="true"></span>
           <span class="tl-year">{project.year}</span>
           <a
-            class="tl-card"
+            class="tl-card hatch-shadow"
             href={project.href}
             target={project.href.startsWith("http") ? "_blank" : undefined}
             rel={project.href.startsWith("http") ? "noopener noreferrer" : undefined}

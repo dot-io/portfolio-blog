@@ -1,56 +1,85 @@
+/* ---------- palette ---------- */
+
+/* Solarized, by Ethan Schoonover: https://ethanschoonover.com/solarized/
+   The sixteen colours as published. Several fall short of WCAG AA (4.5:1) as
+   text on their own backgrounds, so the role tokens below use the base tones
+   that pass and, where an accent does not, the same hue shaded toward black
+   (light) or white (dark) just far enough to pass. The shades come from
+   ensureContrast() in src/utils/contrast.mjs. Pure accents remain for
+   decoration only, where no contrast minimum applies. */
+:root {
+  --base03: #002b36;
+  --base02: #073642;
+  --base01: #586e75;
+  --base00: #657b83;
+  --base0: #839496;
+  --base1: #93a1a1;
+  --base2: #eee8d5;
+  --base3: #fdf6e3;
+  --yellow: #b58900;
+  --orange: #cb4b16;
+  --red: #dc322f;
+  --magenta: #d33682;
+  --violet: #6c71c4;
+  --blue: #268bd2;
+  --cyan: #2aa198;
+  --green: #859900;
+}
+
 /* ---------- tokens ---------- */
 
 :root {
   color-scheme: light;
 
-  --bg: #fcfbf8;
-  --bg-deep: #f3f0e8;
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-solid: #ffffff;
+  --bg: var(--base3);
+  --bg-alt: var(--base2);
+  /* Solarized's own body tone, base00, is only 4.1:1 on base3, so every text
+     role moves one base tone darker. Ratios are against --bg. */
+  --text: var(--base02); /* 12.1:1 */
+  --strong: var(--base03); /* 13.9:1 */
+  --muted: var(--base01); /* 5.0:1 */
+  /* --line is decorative only: rules, leaders, card edges, never text */
+  --line: var(--base1);
+  --dots: color-mix(in srgb, var(--base1) 45%, transparent);
 
-  --text: #16140f;
-  --muted: #6a6354;
+  /* each accent has one job, so a colour on the page always means the same thing */
+  --link: #2075b0; /* blue, 4.6:1 */
+  --mark: #8d6b00; /* yellow, 4.6:1: hover and selected fills, focus ring */
+  --on-mark: var(--base3); /* text on a --mark fill, 4.6:1 */
+  --prompt: #207c75; /* cyan, 4.6:1 */
+  --heading-mark: #c34815; /* orange, 4.6:1 */
+  --tag: #c8337c; /* magenta, 4.6:1 */
+  --stripe: var(--yellow); /* decorative hatching, pure Solarized */
 
-  /* --accent is for gold text and borders, so it is tuned per theme for
-     contrast; --gold is for ornament and solid fills and is the same in both.
-     --on-gold is the ink that sits on a gold fill: dark in either theme, so it
-     is deliberately not overridden in the dark block below. */
-  --accent: #8a6d1c;
-  --accent-soft: #a8862a;
-  --gold: #b99544;
-  --on-gold: #16140f;
-  --glow: rgba(185, 149, 68, 0.4);
+  --font: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --shell: 82ch;
 
-  /* every hairline on the site carries a little gold */
-  --line: rgba(154, 122, 36, 0.24);
-  --line-strong: rgba(154, 122, 36, 0.45);
-
-  --font-display: "Cinzel", "Trajan Pro", Georgia, serif;
-  --font-body: "Jost", "Avenir Next", "Segoe UI", sans-serif;
-
-  --shell: 76ch;
-  --radius: 2px;
+  /* diagonal stripes in whatever `color` the element using it has */
+  --hatch: repeating-linear-gradient(
+    -45deg,
+    currentColor 0 1.5px,
+    transparent 1.5px 6px
+  );
 }
 
 html.dark {
   color-scheme: dark;
 
-  --bg: #0a0908;
-  --bg-deep: #040403;
-  --surface: rgba(255, 255, 255, 0.045);
-  --surface-solid: #131211;
+  --bg: var(--base03);
+  --bg-alt: var(--base02);
+  /* likewise one tone lighter: base00 would be only 3.4:1 here */
+  --text: var(--base1); /* 5.6:1 */
+  --strong: var(--base2); /* 12.3:1 */
+  --muted: var(--base0); /* 4.8:1 */
+  --line: var(--base01);
+  --dots: color-mix(in srgb, var(--base01) 55%, transparent);
 
-  --text: #f2eee3;
-  --muted: #9c9482;
-
-  /* the same gold as light mode — 7.5:1 on this background */
-  --accent: #b99544;
-  --accent-soft: #cfa957;
-  --gold: #b99544;
-  --glow: rgba(185, 149, 68, 0.4);
-
-  --line: rgba(185, 149, 68, 0.24);
-  --line-strong: rgba(185, 149, 68, 0.45);
+  --link: #3794d6; /* blue, 4.6:1 */
+  --mark: var(--yellow); /* 4.7:1 as published */
+  --on-mark: var(--base03);
+  --prompt: var(--cyan); /* 4.8:1 as published */
+  --heading-mark: #d67349; /* orange, 4.6:1 */
+  --tag: #dd649f; /* magenta, 4.6:1 */
 }
 
 /* ---------- base ---------- */
@@ -59,10 +88,16 @@ html.dark {
   box-sizing: border-box;
 }
 
+/* The dot grid lives on the root, not on body: root backgrounds paint before
+   negative z-index layers, which is what lets .hatch-shadow sit behind cards
+   while staying visible. */
 html {
   background-color: var(--bg);
+  background-image: radial-gradient(var(--dots) 1px, transparent 1.2px);
+  background-size: 22px 22px;
   color: var(--text);
-  font-family: var(--font-body);
+  font-family: var(--font);
+  font-variant-ligatures: contextual;
   scroll-behavior: smooth;
 }
 
@@ -70,31 +105,29 @@ body {
   position: relative;
   margin: 0;
   min-height: 100vh;
-  padding: 0 1.25rem 4rem;
-  font-size: 1.05rem;
-  font-weight: 300;
-  line-height: 1.7;
-  letter-spacing: 0.01em;
+  padding: 0 1.25rem 3rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
 }
 
+/* a solid page column over the dotted desk, so the grid never sits between
+   words; z-index -2 keeps it under the -1 of .hatch-shadow */
 body::before {
   content: "";
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
   z-index: -2;
-  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  width: min(100%, calc(var(--shell) + 5rem));
+  background: var(--bg);
+  border-inline: 1px dotted var(--line);
+  transform: translateX(-50%);
 }
 
-/* the faintest tooth of paper */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.28;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+::selection {
+  color: var(--on-mark);
+  background: var(--mark);
 }
 
 .shell {
@@ -114,68 +147,134 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.15;
+  color: var(--strong);
+  font-weight: 700;
+  line-height: 1.3;
   text-wrap: balance;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(2.1rem, 6vw, 3.4rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: clamp(1.5rem, 4.5vw, 2.1rem);
+  letter-spacing: -0.01em;
 }
 
 h2 {
-  margin: 2.5rem 0 0.75rem;
-  font-size: clamp(1.35rem, 3vw, 1.7rem);
-  letter-spacing: 0.08em;
+  margin: 2.75rem 0 0.75rem;
+  font-size: 1.2rem;
 }
 
 h3 {
   margin: 2rem 0 0.5rem;
-  font-size: 1.2rem;
-  letter-spacing: 0.06em;
+  font-size: 1.02rem;
+}
+
+/* Markdown's own heading marks, kept visible. Only for headings in running
+   text, not for the titles inside cards. */
+.page-head h1::before,
+article h1::before {
+  content: "# ";
+  color: var(--heading-mark);
+}
+
+main > h2::before,
+article h2::before {
+  content: "## ";
+  color: var(--heading-mark);
+}
+
+main > h3::before,
+article h3::before {
+  content: "### ";
+  color: var(--heading-mark);
 }
 
 p {
   margin: 0 0 1.1rem;
-  max-width: 68ch;
+  max-width: 72ch;
+}
+
+strong {
+  color: var(--strong);
 }
 
 a {
-  color: var(--accent);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: color 0.25s ease, border-color 0.25s ease;
+  color: var(--link);
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.25em;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 a:hover,
 a:focus-visible {
-  color: var(--accent-soft);
-  border-bottom-color: currentColor;
+  color: var(--on-mark);
+  background-color: var(--mark);
+  text-decoration-style: solid;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px dotted var(--mark);
   outline-offset: 3px;
 }
 
 code {
-  font-family: ui-monospace, "SFMono-Regular", "Cascadia Code", monospace;
-  font-size: 0.9em;
-  padding: 0.1em 0.4em;
-  background: var(--surface);
+  font-family: var(--font);
+  font-size: 0.92em;
+  padding: 0.1em 0.35em;
+  color: var(--strong);
+  background: var(--bg-alt);
+}
+
+pre {
+  position: relative;
+  margin: 1.6rem 0;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
   border: 1px solid var(--line);
 }
 
+pre code {
+  padding: 0;
+  color: inherit;
+  background: none;
+}
+
+/* Shiki emits both Solarized themes; the light one is inline, the dark one
+   waits in --shiki-dark until the toggle sets html.dark. */
+html.dark .astro-code,
+html.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+}
+
 blockquote {
-  margin: 1.5rem 0;
-  padding: 0.4rem 0 0.4rem 1.4rem;
-  border-left: 2px solid var(--gold);
+  position: relative;
+  margin: 1.6rem 0;
+  padding: 0.3rem 0 0.3rem 1.6rem;
   color: var(--muted);
   font-style: italic;
+}
+
+blockquote::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+  color: var(--stripe);
+  background: var(--hatch);
+}
+
+hr {
+  height: 8px;
+  margin: 2.5rem 0;
+  border: 0;
+  color: var(--line);
+  background: var(--hatch);
 }
 
 img {
@@ -183,39 +282,86 @@ img {
   height: auto;
 }
 
+ul:not([class]),
+ol:not([class]) {
+  padding-left: 2.5ch;
+}
+
+ul:not([class]) > li::marker {
+  content: "- ";
+  color: var(--heading-mark);
+}
+
+ol:not([class]) > li::marker {
+  color: var(--heading-mark);
+}
+
+table {
+  width: 100%;
+  margin: 1.6rem 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  padding: 0.45rem 0.8rem 0.45rem 0;
+  text-align: left;
+  border-bottom: 1px dotted var(--line);
+}
+
+th {
+  color: var(--strong);
+  border-bottom: 2px solid var(--line);
+}
+
+/* a code comment above the title */
 .eyebrow {
-  margin: 0 0 0.7rem;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.42em;
-  text-transform: uppercase;
-  color: var(--gold);
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  text-transform: lowercase;
+  color: var(--muted);
+}
+
+.eyebrow::before {
+  content: "// ";
+  color: var(--prompt);
 }
 
 .lede {
-  font-size: 1.15rem;
+  font-size: 1rem;
   color: var(--muted);
-  max-width: 60ch;
+  max-width: 64ch;
 }
 
 .muted {
   color: var(--muted);
 }
 
-/* a star, then a hairline of struck gold */
+/* a striped band: the site's main divider */
 .rule {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin: 1.4rem 0 2rem;
-  color: var(--gold);
+  height: 9px;
+  margin: 1.1rem 0 1.4rem;
+  color: var(--stripe);
+  background: var(--hatch);
 }
 
-.rule::after {
+/* A striped offset shadow. It goes behind the element through z-index -1
+   against the root stacking context, so the element must not create its own
+   (no transform, filter or opacity on it, including on hover). */
+.hatch-shadow {
+  position: relative;
+  background-color: var(--bg);
+}
+
+.hatch-shadow::after {
   content: "";
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--gold), var(--line), transparent);
+  position: absolute;
+  inset: 6px -6px -6px 6px;
+  z-index: -1;
+  color: var(--line);
+  background: var(--hatch);
+  transition: color 0.2s ease;
 }
 
 /* ---------- header ---------- */
@@ -226,9 +372,8 @@ img {
   z-index: 10;
   margin: 0 -1.25rem 2.5rem;
   padding: 0 1.25rem;
-  backdrop-filter: blur(10px);
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  border-bottom: 2px dotted var(--line);
 }
 
 .header-bar {
@@ -240,36 +385,48 @@ img {
   width: 100%;
   max-width: var(--shell);
   margin: 0 auto;
-  padding: 0.85rem 0;
+  padding: 0.8rem 0;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--text);
-  border: none;
+  font-weight: 700;
+  color: var(--strong);
+  text-decoration: none;
 }
 
 .brand:hover,
 .brand:focus-visible {
-  color: var(--accent);
+  color: var(--strong);
+  background: none;
 }
 
-.brand-mark {
-  color: var(--gold);
-  transition: transform 0.5s ease, color 0.3s ease;
+.brand-user {
+  color: var(--prompt);
 }
 
-/* 45deg, not 90 — a four-pointed star is unchanged by a quarter turn */
-.brand:hover .brand-mark,
-.brand:focus-visible .brand-mark {
-  color: var(--accent);
-  transform: rotate(45deg);
+.brand-path {
+  color: var(--link);
+}
+
+.brand-sigil {
+  margin: 0 0.6ch 0 0.2ch;
+  color: var(--muted);
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  background: var(--stripe);
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .header-tools {
@@ -290,17 +447,27 @@ img {
 
 .nav-links a {
   display: block;
-  padding: 0.6rem 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  padding: 0.45rem 0;
+  font-size: 0.9rem;
+  text-transform: lowercase;
   color: var(--muted);
-  border: none;
+  text-decoration: none;
+}
+
+.nav-links a::before {
+  content: "./";
+  color: var(--muted);
 }
 
 .nav-links a:hover,
 .nav-links a:focus-visible {
-  color: var(--accent);
+  color: var(--on-mark);
+  background: var(--mark);
+}
+
+.nav-links a:hover::before,
+.nav-links a:focus-visible::before {
+  color: inherit;
 }
 
 :has(.menu[aria-expanded="true"]) .nav-links {
@@ -314,80 +481,57 @@ img {
 .nav-links .nav-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
 }
 
 .nav-chevron {
   display: none;
-  color: var(--gold);
-  transition: transform 0.25s ease;
+  margin-left: 0.45rem;
+  color: var(--muted);
+  transition: transform 0.2s ease;
 }
 
 .nav-menu {
   margin: 0 0 0.4rem;
-  padding: 0 0 0 1rem;
+  padding: 0 0 0 1.5ch;
   list-style: none;
-  border-left: 1px solid var(--line);
+  border-left: 2px dotted var(--line);
 }
 
 .nav-links .nav-menu a {
-  padding: 0.45rem 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
 }
 
 .menu {
-  padding: 0.35rem 0.8rem;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font);
+  font-size: 0.85rem;
   color: var(--text);
-  background: transparent;
-  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  border: 1px dashed var(--line);
   cursor: pointer;
 }
 
-.menu:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+.menu:hover,
+.menu[aria-expanded="true"] {
+  color: var(--on-mark);
+  background: var(--mark);
+  border-color: var(--mark);
 }
 
 @media screen and (min-width: 680px) {
   .nav-links {
     display: flex;
     align-items: center;
-    gap: 1.75rem;
+    gap: 1.6rem;
     order: 2;
     flex-basis: auto;
     padding: 0;
   }
 
-  /* the growing underline belongs to top-level items only, not to the
-     links inside the dropdown panel */
   .nav-links > a,
   .nav-links .nav-trigger {
-    position: relative;
-    padding: 0;
-  }
-
-  .nav-links > a::after,
-  .nav-links .nav-trigger::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 100%;
-    bottom: -6px;
-    height: 1px;
-    background: var(--accent);
-    transition: right 0.3s ease;
-  }
-
-  .nav-links > a:hover::after,
-  .nav-links > a:focus-visible::after,
-  .nav-links .nav-trigger:hover::after,
-  .nav-links .nav-trigger:focus-visible::after {
-    right: 0;
+    padding: 0 0.15rem;
   }
 
   .header-tools {
@@ -414,18 +558,17 @@ img {
   .nav-menu {
     position: absolute;
     top: 100%;
-    left: 50%;
-    min-width: 12.5rem;
+    left: 0;
+    min-width: 13rem;
     margin: 0;
-    padding: 0.35rem 0;
-    background: var(--surface-solid);
+    padding: 0.4rem 0;
+    background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: 0 20px 44px -26px rgba(0, 0, 0, 0.45);
+    box-shadow: 5px 5px 0 var(--bg-alt);
     opacity: 0;
     visibility: hidden;
-    transform: translate(-50%, 0.35rem);
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+    transform: translateY(0.3rem);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
   }
 
   /* bridges the gap under the name, so the pointer can travel into the
@@ -436,13 +579,13 @@ img {
     inset: -0.9rem 0 100% 0;
   }
 
-  /* :focus-within is what makes this work for the keyboard — the panel opens
+  /* :focus-within is what makes this work for the keyboard: the panel opens
      while the name itself is focused, before Tab reaches the links inside */
   .nav-group:hover .nav-menu,
   .nav-group:focus-within .nav-menu {
     opacity: 1;
     visibility: visible;
-    transform: translate(-50%, 0.9rem);
+    transform: translateY(0.75rem);
   }
 
   .nav-group:hover .nav-chevron,
@@ -452,16 +595,9 @@ img {
 
   .nav-links .nav-menu a {
     display: block;
-    padding: 0.6rem 1.1rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.18em;
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
     white-space: nowrap;
-  }
-
-  .nav-links .nav-menu a:hover,
-  .nav-links .nav-menu a:focus-visible {
-    color: var(--accent);
-    background: var(--surface);
   }
 }
 
@@ -469,136 +605,161 @@ img {
 
 .btn {
   display: inline-block;
-  padding: 0.7rem 1.6rem;
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  padding: 0.45rem 1.1rem;
+  font-family: var(--font);
+  font-size: 0.88rem;
   color: var(--text);
-  background: transparent;
-  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  border: 1px solid var(--line);
   cursor: pointer;
-  transition: color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.btn::before {
+  content: "[ ";
+  color: var(--muted);
+}
+
+.btn::after {
+  content: " ]";
+  color: var(--muted);
 }
 
 .btn:hover,
 .btn:focus-visible {
-  color: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 24px -8px var(--glow);
+  color: var(--on-mark);
+  background: var(--mark);
+  border-color: var(--mark);
 }
 
-/* ---------- cards & lists ---------- */
-
-.card {
-  display: block;
-  padding: 1.4rem 1.6rem;
+.btn:hover::before,
+.btn:hover::after {
   color: inherit;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-a.card:hover,
-a.card:focus-visible {
-  color: inherit;
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 40px -28px var(--glow);
-}
+/* ---------- post list ---------- */
 
 .post-list {
   list-style: none;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
   padding: 0;
-  display: grid;
-  gap: 0.9rem;
 }
 
 .post-item {
-  padding: 1rem 1.2rem;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  transition: border-color 0.25s ease;
-}
-
-.post-item:hover,
-.post-item:focus-within {
-  border-color: var(--accent);
+  padding: 0.85rem 0;
+  border-bottom: 1px dotted var(--line);
 }
 
 .post-item.is-hidden {
   display: none;
 }
 
+/* title, then a dotted leader running out to the date, like a table of contents */
 .post-link {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  color: var(--text);
-  border: none;
+  gap: 1ch;
+  color: var(--strong);
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.post-item:hover .post-link,
+.post-link:hover,
 .post-link:focus-visible {
-  color: var(--accent);
+  color: var(--strong);
+  background: none;
+}
+
+.post-title {
+  flex: 0 1 auto;
+}
+
+.post-link:hover .post-title,
+.post-link:focus-visible .post-title {
+  color: var(--on-mark);
+  background: var(--mark);
+}
+
+.post-leader {
+  flex: 1 1 4ch;
+  min-width: 4ch;
+  border-bottom: 2px dotted var(--line);
 }
 
 .post-meta {
   flex-shrink: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.post-desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.88rem;
   color: var(--muted);
 }
 
 .post-item .tags {
-  margin: 0.7rem 0 0;
-}
-
-.arrow {
-  color: var(--accent);
-  font-size: 0.9rem;
+  margin: 0.35rem 0 0;
 }
 
 /* ---------- tag filter ---------- */
 
 .filter-bar {
-  margin: 2.5rem 0 0;
+  margin: 2rem 0 0;
 }
 
 .filter-bar .tags {
-  margin: 0.75rem 0 0;
+  margin: 0.5rem 0 0;
+  gap: 0.5rem;
 }
 
 .tag-filter {
-  font-family: var(--font-body);
+  padding: 0.1rem 0.6rem;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  background: var(--bg);
+  border: 1px dashed var(--line);
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.tag-filter:hover {
+  border-style: solid;
+  border-color: var(--tag);
 }
 
 .tag-filter[aria-pressed="true"] {
-  color: var(--on-gold);
-  background: var(--gold);
-  border-color: var(--gold);
+  color: var(--on-mark);
+  background: var(--mark);
+  border: 1px solid var(--mark);
+}
+
+.tag-filter[aria-pressed="true"]::before {
+  color: inherit;
+}
+
+/* "All" is not a tag, so it does not get a hash */
+.tag-filter[data-tag=""]::before {
+  content: none;
 }
 
 .filter-status {
-  margin: 0.9rem 0 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  margin: 0.7rem 0 0;
+  font-size: 0.82rem;
   color: var(--muted);
+}
+
+.filter-status::before {
+  content: "> ";
+  color: var(--prompt);
 }
 
 .filter-empty {
   margin: 2rem 0;
-  padding: 1.6rem;
+  padding: 1.4rem;
   text-align: center;
   color: var(--muted);
-  border: 1px dashed var(--line-strong);
+  border: 2px dotted var(--line);
 }
 
 /* ---------- tags ---------- */
@@ -606,38 +767,38 @@ a.card:focus-visible {
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 1.25rem 0;
+  gap: 0.2rem 1.4ch;
+  margin: 1rem 0;
   padding: 0;
   list-style: none;
 }
 
 .tag {
   margin: 0;
-  padding: 0.25rem 0.85rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  color: var(--tag);
+}
+
+.tag::before {
+  content: "#";
   color: var(--muted);
-  background: var(--surface);
-  border: 1px solid var(--line);
 }
 
 .tag a {
   color: inherit;
-  border: none;
+  text-decoration: none;
 }
 
-.tag:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+.tag a:hover,
+.tag a:focus-visible {
+  color: var(--on-mark);
 }
 
 /* ---------- timeline ---------- */
 
 .timeline {
   position: relative;
-  margin: 3rem 0 1rem;
+  margin: 2.5rem 0 1rem;
   padding: 0;
   list-style: none;
 }
@@ -645,23 +806,15 @@ a.card:focus-visible {
 .timeline::before {
   content: "";
   position: absolute;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  left: 8px;
-  width: 1px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    var(--gold) 8%,
-    var(--gold) 92%,
-    transparent
-  );
-  opacity: 0.8;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  left: 5px;
+  border-left: 2px dotted var(--line);
 }
 
 .tl-item {
   position: relative;
-  padding: 0 0 2.75rem 2.75rem;
+  padding: 0 0 2.6rem 2.5rem;
 }
 
 .tl-item:last-child {
@@ -670,68 +823,73 @@ a.card:focus-visible {
 
 .tl-node {
   position: absolute;
-  top: 0.4rem;
+  top: 0.45rem;
   left: 0;
-  display: flex;
-  color: var(--gold);
-  opacity: 0.7;
-  transition: color 0.3s ease, opacity 0.3s ease, transform 0.5s ease,
-    filter 0.3s ease;
+  width: 12px;
+  height: 12px;
+  background: var(--bg);
+  border: 2px solid var(--muted);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tl-item:hover .tl-node,
 .tl-item:focus-within .tl-node {
-  color: var(--accent);
-  opacity: 1;
-  transform: rotate(45deg) scale(1.15);
-  filter: drop-shadow(0 0 9px var(--glow));
+  background: var(--mark);
+  border-color: var(--mark);
 }
 
 .tl-year {
   display: block;
   margin-bottom: 0.5rem;
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0.3em;
-  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--prompt);
 }
 
 .tl-card {
   display: block;
-  padding: 1.3rem 1.5rem;
+  padding: 1.1rem 1.3rem;
   color: inherit;
-  background: var(--surface);
+  text-decoration: none;
   border: 1px solid var(--line);
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.2s ease;
 }
 
 .tl-card:hover,
 .tl-card:focus-visible {
   color: inherit;
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 44px -30px var(--glow);
+  background-color: var(--bg);
+  border-color: var(--mark);
+}
+
+.tl-card:hover::after,
+.tl-card:focus-visible::after {
+  color: var(--mark);
 }
 
 .tl-title {
   margin: 0;
-  font-size: 1.15rem;
-  letter-spacing: 0.05em;
+  font-size: 1.02rem;
 }
 
 .tl-status {
   display: block;
-  margin: 0.35rem 0 0.6rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent);
+  margin: 0.2rem 0 0.6rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.tl-status::before {
+  content: "[";
+}
+
+.tl-status::after {
+  content: "]";
 }
 
 .tl-blurb {
-  margin: 0 0 0.9rem;
-  color: var(--muted);
-  font-size: 0.98rem;
+  margin: 0 0 0.7rem;
+  font-size: 0.9rem;
 }
 
 .tl-card .tags {
@@ -740,39 +898,36 @@ a.card:focus-visible {
 
 .tl-more {
   display: inline-block;
-  margin-top: 1rem;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--accent);
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--link);
 }
 
 @media screen and (min-width: 860px) {
   .timeline::before {
-    left: 50%;
+    left: calc(50% - 1px);
   }
 
   .tl-item {
     width: 50%;
-    padding: 0 3rem 3rem 0;
+    padding: 0 2.75rem 2.8rem 0;
     text-align: right;
   }
 
   /* the right column rides up so the chain reads as one descent */
   .tl-item:nth-child(even) {
     margin: -1.5rem 0 0 50%;
-    padding: 0 0 3rem 3rem;
+    padding: 0 0 2.8rem 2.75rem;
     text-align: left;
   }
 
   .tl-node {
     left: auto;
-    right: -8px;
+    right: -6px;
   }
 
   .tl-item:nth-child(even) .tl-node {
-    left: -8px;
+    left: -6px;
     right: auto;
   }
 
@@ -789,43 +944,68 @@ a.card:focus-visible {
 
 .site-footer {
   max-width: var(--shell);
-  margin: 5rem auto 0;
-  padding-top: 1.6rem;
-  border-top: 1px solid var(--line);
+  margin: 4.5rem auto 0;
+  color: var(--muted);
+}
+
+.footer-row,
+.colophon {
+  font-size: 0.82rem;
+}
+
+.site-footer::before {
+  content: "";
+  display: block;
+  height: 9px;
+  margin-bottom: 1.2rem;
+  color: var(--line);
+  background: var(--hatch);
+}
+
+.footer-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+  gap: 0.6rem 1.5rem;
+}
+
+.colophon {
+  margin: 0.9rem 0 0;
+  padding-top: 0.9rem;
+  max-width: none;
+  border-top: 1px dotted var(--line);
 }
 
 .social-links {
   display: flex;
-  gap: 0.6rem;
+  gap: 1.4ch;
 }
 
-.social-links a {
-  padding: 0.4rem 1rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+.social-links a::before {
+  content: "[";
   color: var(--muted);
-  border: 1px solid var(--line);
 }
 
-.social-links a:hover,
-.social-links a:focus-visible {
-  color: var(--accent);
-  border-color: var(--accent);
+.social-links a::after {
+  content: "]";
+  color: var(--muted);
+}
+
+.social-links a:hover::before,
+.social-links a:hover::after,
+.social-links a:focus-visible::before,
+.social-links a:focus-visible::after {
+  color: inherit;
 }
 
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
     scroll-behavior: auto;
+  }
+
+  .cursor {
+    animation: none;
   }
 }

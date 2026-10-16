@@ -81,11 +81,17 @@ const isExternal = (href: string) => href.startsWith("http");
 <style>
   a[aria-current="page"],
   a[data-section] {
-    color: var(--text);
+    color: var(--strong);
+    font-weight: 700;
   }
 
   .nav-external {
     margin-left: 0.4rem;
-    color: var(--gold);
+    color: var(--prompt);
+  }
+
+  /* "./" means a path on this site, so links that leave it go without */
+  a[target="_blank"]::before {
+    content: none;
   }
 </style>

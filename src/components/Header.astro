@@ -2,13 +2,11 @@
 import Navigation from "./Navigation.astro";
 import Menu from "./Menu.astro";
 import ThemeToggle from "./ThemeToggle.astro";
-import Star from "./Star.astro";
 ---
 <header class="site-header">
   <div class="header-bar">
-    <a class="brand" href="/">
-      <Star class="brand-mark" size={13} />
-      <span>Nate's Lab</span>
+    <a class="brand" href="/" aria-label="Nate's Lab, home">
+      <span class="brand-user">nate@lab</span><span class="brand-sigil">:<span class="brand-path">~</span>$</span><span class="cursor" aria-hidden="true"></span>
     </a>
     <div class="header-tools">
       <ThemeToggle />
