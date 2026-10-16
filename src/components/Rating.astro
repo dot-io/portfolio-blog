@@ -1,0 +1,190 @@
+---
+// Star rating for reviews, used from .mdx posts.
+//
+//   <Rating value={4.5} kind="book" title="Dune" by="Frank Herbert" year={1965}>
+//     One-line verdict, optional.
+//   </Rating>
+//
+// With a title it renders a review card; without one it is a small inline
+// rating that can sit in a sentence: <Rating value={3} />
+interface Props {
+  value: number;
+  max?: number;
+  title?: string;
+  kind?: string;
+  by?: string;
+  year?: string | number;
+}
+
+const { value, max = 5, title, kind = "review", by, year } = Astro.props;
+
+// fail the build rather than publish a rating that cannot be drawn
+if (!Number.isFinite(value) || value < 0 || value > max) {
+  throw new Error(`<Rating> value ${value} must be between 0 and ${max}`);
+}
+
+// how much of each star is filled, 0 to 1, so 3.5 draws a half star
+const fills = Array.from({ length: max }, (_, i) => Math.min(1, Math.max(0, value - i)));
+const shown = Number.isInteger(value) ? String(value) : value.toFixed(1);
+const credit = [by, year].filter(Boolean).join(", ");
+const STAR = "M12 2.5l2.95 6.55 7.05.75-5.3 4.75 1.5 6.95L12 17.9l-6.2 3.6 1.5-6.95L2 9.8l7.05-.75z";
+---
+{
+  title ? (
+    <aside class="review hatch-shadow" aria-label={`${kind}: ${title}`}>
+      <p class="review-kind">{kind}</p>
+      <p class="review-title">{title}</p>
+      {credit && <p class="review-by">{credit}</p>}
+      <p class="review-score">
+        <span class="stars" role="img" aria-label={`${shown} out of ${max} stars`}>
+          {fills.map((fill) => (
+            <span class="star" style={`--fill: ${fill * 100}%`}>
+              <svg class="star-empty" viewBox="0 0 24 24" aria-hidden="true"><path d={STAR} /></svg>
+              <svg class="star-full" viewBox="0 0 24 24" aria-hidden="true"><path d={STAR} /></svg>
+            </span>
+          ))}
+        </span>
+        <span class="score" aria-hidden="true">{shown}<span class="score-max">/{max}</span></span>
+      </p>
+      {Astro.slots.has("default") && (
+        <div class="review-verdict"><slot /></div>
+      )}
+    </aside>
+  ) : (
+    <span class="rating-inline">
+      <span class="stars" role="img" aria-label={`${shown} out of ${max} stars`}>
+        {fills.map((fill) => (
+          <span class="star" style={`--fill: ${fill * 100}%`}>
+            <svg class="star-empty" viewBox="0 0 24 24" aria-hidden="true"><path d={STAR} /></svg>
+            <svg class="star-full" viewBox="0 0 24 24" aria-hidden="true"><path d={STAR} /></svg>
+          </span>
+        ))}
+      </span>
+      <span class="score" aria-hidden="true">{shown}<span class="score-max">/{max}</span></span>
+    </span>
+  )
+}
+
+<style>
+  .review {
+    margin: 2rem 6px 2rem 0;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--line);
+  }
+
+  .review p {
+    max-width: none;
+    margin: 0;
+  }
+
+  /* the same code-comment label as the page eyebrows */
+  .review-kind {
+    font-size: 0.82rem;
+    text-transform: lowercase;
+    color: var(--muted);
+  }
+
+  .review-kind::before {
+    content: "// ";
+    color: var(--prompt);
+  }
+
+  /* prefixed with .review to outrank the margin reset on .review p */
+  .review .review-title {
+    margin-top: 0.15rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--strong);
+  }
+
+  .review-by {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .review .review-score {
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px dotted var(--line);
+  }
+
+  .review-verdict {
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  .review-verdict :global(p) {
+    margin: 0;
+  }
+
+  .rating-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6ch;
+    vertical-align: -0.15em;
+  }
+
+  .stars {
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  .star {
+    position: relative;
+    width: 1.15em;
+    height: 1.15em;
+  }
+
+  .rating-inline .star {
+    width: 1em;
+    height: 1em;
+  }
+
+  .star svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* outlines use --muted, not --line: an empty star is information, so it
+     needs 3:1 like any other meaningful graphic */
+  .star-empty path {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  /* the filled star is clipped from the right, so a fraction fills left to right */
+  .star-full {
+    clip-path: inset(0 calc(100% - var(--fill)) 0 0);
+  }
+
+  .star-full path {
+    fill: var(--mark);
+    stroke: var(--mark);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  .score {
+    font-weight: 700;
+    color: var(--strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .score-max {
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .rating-inline .score {
+    font-size: 0.85em;
+  }
+</style>

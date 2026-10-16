@@ -2,9 +2,11 @@
 import type { MarkdownInstance } from "astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BlogPost from "../components/BlogPost.astro";
+import { newestFirst } from "../utils/dates";
 
 interface Frontmatter {
 	title: string;
+	// a bare date, or a timestamp with offset to order two posts on one day
 	pubDate: string;
 	description: string;
 	author: string;
@@ -13,14 +15,11 @@ interface Frontmatter {
 }
 
 const allPosts = Object.values(
-	import.meta.glob<MarkdownInstance<Frontmatter>>("./posts/*.md", {
+	// .mdx is for posts that use components, such as <Rating> in reviews
+	import.meta.glob<MarkdownInstance<Frontmatter>>("./posts/*.{md,mdx}", {
 		eager: true,
 	}),
-).sort(
-	(a, b) =>
-		new Date(b.frontmatter.pubDate).valueOf() -
-		new Date(a.frontmatter.pubDate).valueOf(),
-);
+).sort((a, b) => newestFirst(a.frontmatter.pubDate, b.frontmatter.pubDate));
 
 const allTags = [
 	...new Set(allPosts.flatMap((post) => post.frontmatter.tags ?? [])),
